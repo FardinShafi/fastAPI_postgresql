@@ -42,3 +42,16 @@ class Department(Base):
     name = Column(String, index=True)
 
     employees = relationship("Employee", back_populates="department")
+
+class Tables(Base):
+    __tablename__ = 'tables'
+
+    id = Column(Integer, primary_key=True, index=True)
+    table_name = Column(String, unique=True, index=True)
+
+class Vendor(Base):
+    __tablename__ = 'vendor'
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, index=True)
+    contact_number = Column(String)

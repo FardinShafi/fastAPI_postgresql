@@ -23,6 +23,7 @@ async function getTableColumns() {
 
 async function populateTableSelect() {
     const tableSelect = document.getElementById('table-select');
+    const allTablesDiv = document.getElementById('all-tables');
 
     try {
         const response = await fetch('/tables');
@@ -33,6 +34,13 @@ async function populateTableSelect() {
             option.text = tableName;
             tableSelect.add(option);
         });
+
+        // Get all tables and display below the select
+        const allTablesResponse = await fetch('/all-tables');
+        const allTablesData = await allTablesResponse.json();
+
+        const allTablesHTML = allTablesData.map(tableName => `<p>${tableName}</p>`).join('');
+        allTablesDiv.innerHTML = allTablesHTML;
     } catch (error) {
         console.error('Error fetching table names:', error);
     }

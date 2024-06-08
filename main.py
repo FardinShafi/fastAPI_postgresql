@@ -23,29 +23,27 @@ def get_db():
 
 # Endpoint to get table names
 @app.get("/tables", response_model=list)
-def get_tables():
+def get_tables(db: Session = Depends(get_db)):
     inspector = inspect(engine)
     table_names = inspector.get_table_names()
+    
+    # Sort the table names in alphanumeric order
+    table_names.sort()
+    
+    # Update the tables table in the database
+    Tables = models.Tables
+    existing_tables = [table.table_name for table in db.query(Tables).all()]
+    
+    for table_name in table_names:
+        if table_name not in existing_tables:
+            db_table = Tables(table_name=table_name)
+            db.add(db_table)
+    
+    db.commit()
+    
     return table_names
 
 # Endpoint to get column names and data types for a specific table
-# @app.get("/tables/{table_name}/columns", response_model=dict)
-# def get_columns(table_name: str, db: Session = Depends(get_db)):
-#     if table_name == "employee":
-#         table = models.Employee
-#     elif table_name == "student":
-#         table = models.Student
-#     elif table_name == "guardian":
-#         table = models.Guardian
-#     else:
-#         raise HTTPException(status_code=404, detail="Table not found")
-    
-#     columns = {}
-#     for column in table.__table__.columns:
-#         columns[column.name] = str(column.type)
-    
-#     return columns
-
 @app.get("/tables/{table_name}/columns", response_model=dict)
 def get_columns(table_name: str, db: Session = Depends(get_db)) -> dict:
     
@@ -60,3 +58,12 @@ def get_columns(table_name: str, db: Session = Depends(get_db)) -> dict:
         columns[column.name] = str(column.type)
     
     return columns
+
+# Endpoint to get the list of tables from the tables table
+@app.get("/all-tables", response_model=list)
+def get_all_tables(db: Session = Depends(get_db)):
+    Tables = models.Tables
+    tables = db.query(Tables).all()
+    table_names = sorted([table.table_name for table in tables])
+    
+    return table_names
